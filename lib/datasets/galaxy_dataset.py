@@ -1,8 +1,11 @@
 import os
 import logging
 import pandas as pd
+import numpy as np
+
 from PIL import Image
 import imgaug.augmenters as iaa
+
 import torch
 from torch.utils.data.dataset import Dataset
 from torchvision.transforms import ToTensor
@@ -42,7 +45,7 @@ class GalaxyDataset(Dataset):
                              for aug in augmentations]  # add augmentation
         else:
             augmentations = []
-        transformations = iaa.Sequential([Resize({'height': self.img_h, 'width': self.img_w})])
+        transformations = iaa.Sequential([iaa.Resize({'height': self.img_h, 'width': self.img_w})])
         self.to_tensor = ToTensor()
         self.transform = iaa.Sequential([iaa.Sometimes(then_list=augmentations, p=aug_chance), transformations])
         
