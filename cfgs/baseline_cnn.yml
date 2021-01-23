@@ -1,0 +1,63 @@
+# Model settings
+val_every: 10s
+model_checkpoint_interval: 10
+seed: 1412
+model:
+  name: BaselineCNN
+  parameters:
+    img_h: &img_h 424
+    img_w: &img_w 424
+batch_size: 4
+epochs: 20
+loss_parameters: {}
+optimizer:
+  name: Adam
+  parameters:
+    lr: 0.0003
+lr_scheduler:
+  name: CosineAnnealingLR
+  parameters:
+    T_max: 333300 # 15 * 22220 iterations
+
+# Dataset settings
+datasets:
+  train:
+    type: GalaxyDataset
+    parameters:
+      split: train
+      img_size: [*img_h, *img_w]
+      normalize: false
+      aug_chance: 1.0
+      augmentations:
+        - name: Affine
+          parameters:
+            translate_px:
+             x: !!python/tuple [-25, 25]
+             y: !!python/tuple [-10, 10]
+            rotate: !!python/tuple [-6, 6]
+            scale: !!python/tuple [0.85, 1.15]
+        - name: HorizontalFlip
+          parameters:
+            p: 0.5
+
+      root: "data"
+
+  test:
+    type: GalaxyDataset
+    parameters:
+      split: test
+      img_size: [*img_h, *img_w]
+      normalize: false
+      aug_chance: 0
+      augmentations:
+      root: "data"
+
+  val:
+    type: GalaxyDataset
+    parameters:
+      split: val
+      img_size: [*img_h, *img_w]
+      normalize: false
+      aug_chance: 0
+      augmentations:
+      root: "data"
