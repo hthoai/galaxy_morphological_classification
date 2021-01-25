@@ -1,6 +1,6 @@
 # Model settings
-val_every: 10s
-model_checkpoint_interval: 10
+val_every: 2
+model_checkpoint_interval: 2
 seed: 1412
 model:
   name: BaselineCNN
@@ -8,7 +8,7 @@ model:
     img_h: &img_h 424
     img_w: &img_w 424
 batch_size: 4
-epochs: 20
+epochs: 10
 loss_parameters: {}
 optimizer:
   name: Adam
@@ -27,20 +27,9 @@ datasets:
       split: train
       img_size: [*img_h, *img_w]
       normalize: false
-      aug_chance: 1.0
+      aug_chance: 0
       augmentations:
-        - name: Affine
-          parameters:
-            translate_px:
-             x: !!python/tuple [-25, 25]
-             y: !!python/tuple [-10, 10]
-            rotate: !!python/tuple [-6, 6]
-            scale: !!python/tuple [0.85, 1.15]
-        - name: HorizontalFlip
-          parameters:
-            p: 0.5
-
-      root: "data"
+      root: "datasets"
 
   test:
     type: GalaxyDataset
@@ -50,7 +39,7 @@ datasets:
       normalize: false
       aug_chance: 0
       augmentations:
-      root: "data"
+      root: "datasets"
 
   val:
     type: GalaxyDataset
@@ -60,4 +49,4 @@ datasets:
       normalize: false
       aug_chance: 0
       augmentations:
-      root: "data"
+      root: "datasets"
