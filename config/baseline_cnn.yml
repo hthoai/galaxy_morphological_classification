@@ -1,14 +1,14 @@
 # Model settings
 val_every: 2
-model_checkpoint_interval: 2
+model_checkpoint_interval: 10
 seed: 1412
 model:
   name: BaselineCNN
   parameters:
     img_h: &img_h 424
     img_w: &img_w 424
-batch_size: 4
-epochs: 10
+batch_size: 32
+epochs: 100
 loss_parameters: {}
 optimizer:
   name: Adam
