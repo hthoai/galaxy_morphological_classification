@@ -1,10 +1,8 @@
-from typing import Any
-
-import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.tensor import Tensor
 from torchsummary import summary
+import torch
 
 
 class BaselineCNN(nn.Module):
@@ -12,8 +10,8 @@ class BaselineCNN(nn.Module):
     
     https://www.kaggle.com/helmehelmuto/keras-cnn
     """
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, img_w=424, img_h=424) -> None:
+        super(BaselineCNN, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=512, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1)
