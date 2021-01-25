@@ -1,5 +1,5 @@
 # Model settings
-val_every: 2
+val_every: 5
 model_checkpoint_interval: 10
 seed: 1412
 model:
@@ -7,7 +7,7 @@ model:
   parameters:
     img_h: &img_h 424
     img_w: &img_w 424
-batch_size: 32
+batch_size: 8
 epochs: 100
 loss_parameters: {}
 optimizer:
@@ -17,7 +17,7 @@ optimizer:
 lr_scheduler:
   name: CosineAnnealingLR
   parameters:
-    T_max: 333300 # 15 * 22220 iterations
+    T_max: 492700 # 100 * 4927 iterations
 
 # Dataset settings
 datasets:
