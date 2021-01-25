@@ -38,11 +38,11 @@ class Config:
     def get_loss_parameters(self):
         return self.config['loss_parameters']
 
-    def get_train_parameters(self):
-        return self.config['train_parameters']
+    # def get_train_parameters(self):
+    #     return self.config['train_parameters']
 
-    def get_test_parameters(self):
-        return self.config['test_parameters']
+    # def get_test_parameters(self):
+    #     return self.config['test_parameters']
 
     def __getitem__(self, item):
         return self.config[item]
