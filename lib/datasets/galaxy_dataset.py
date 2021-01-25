@@ -13,10 +13,15 @@ from torchvision.transforms import ToTensor
 
 
 SPLIT_FILES = {
-    'train': 'train_debug.csv',
-    'val': 'val_debug.csv',
-    'test': 'test_debug.csv'
+    'train': 'train.csv',
+    'val': 'val.csv',
+    'test': 'test.csv'
 }
+# SPLIT_FILES = {
+#     'train': 'train_debug.csv',
+#     'val': 'val_debug.csv',
+#     'test': 'test_debug.csv'
+# }
 IMAGE_EXT = '.jpg'
 IMAGE_FOLDER = 'images_training_rev1'
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406])
