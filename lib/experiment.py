@@ -12,10 +12,10 @@ class Experiment:
         self.name = exp_name
         self.exp_dirpath = os.path.join(exps_basedir, exp_name)
         self.models_dirpath = os.path.join(self.exp_dirpath, 'models')
-        self.results_dirpath = os.path.join(self.exp_dirpath, 'results')
         self.cfg_path = os.path.join(self.exp_dirpath, 'config.yaml')
         self.code_state_path = os.path.join(self.exp_dirpath, 'code_state.txt')
         self.log_path = os.path.join(self.exp_dirpath, 'log_{}.txt'.format(mode))
+        self.results_path = os.path.join(self.exp_dirpath, 'results_{}.txt'.format(mode))
         self.tensorboard_writer = SummaryWriter(os.path.join(tensorboard_dir, exp_name))
         self.cfg = None
         self.setup_exp_dir()
@@ -28,7 +28,6 @@ class Experiment:
         if not os.path.exists(self.exp_dirpath):
             os.makedirs(self.exp_dirpath)
             os.makedirs(self.models_dirpath)
-            os.makedirs(self.results_dirpath)
             self.save_code_state()
 
     def save_code_state(self):
@@ -109,10 +108,10 @@ class Experiment:
             self.tensorboard_writer.add_scalar('loss/{}'.format(key), loss_components[key], overall_iter)
 
     def epoch_start_callback(self, epoch, max_epochs):
-        self.logger.debug('Epoch [%d/%d] starting.', epoch, max_epochs)
+        self.logger.debug(f'Epoch [{epoch}/{max_epochs}] starting.')
 
     def epoch_end_callback(self, epoch, max_epochs, model, optimizer, scheduler):
-        self.logger.debug('Epoch [%d/%d] finished.', epoch, max_epochs)
+        self.logger.debug(f'Epoch [{epoch}/{max_epochs}] finished.')
         if epoch % self.cfg['model_checkpoint_interval'] == 0:
             self.save_train_state(epoch, model, optimizer, scheduler)
 
@@ -125,28 +124,19 @@ class Experiment:
     def eval_start_callback(self, cfg):
         self.logger.debug('Beginning testing session. CFG used:\n%s', str(cfg))
 
-    def eval_end_callback(self, dataset, predictions, epoch_evaluated):
-        metrics = self.save_epoch_results(dataset, predictions, epoch_evaluated)
+    def eval_end_callback(self, dataset, epoch_evaluated, results, checkpoint):
         self.logger.debug('Testing session finished on model after epoch %d.', epoch_evaluated)
-        self.logger.info('Results:\n %s', str(metrics))
-
-    def save_epoch_results(self, dataset, predictions, epoch):
-        # setup dirs
-        epoch_results_path = os.path.join(self.results_dirpath, 'epoch_{:04d}'.format(epoch))
-        predictions_dir = os.path.join(epoch_results_path, '{}_predictions'.format(dataset.split))
-        os.makedirs(predictions_dir, exist_ok=True)
-        # eval metrics
-        metrics = dataset.eval_predictions(predictions, output_basedir=predictions_dir)
-        # log tensorboard metrics
-        for key in metrics:
-            self.tensorboard_writer.add_scalar('{}_metrics/{}'.format(dataset.split, key), metrics[key], epoch)
-        # save metrics
-        metrics_path = os.path.join(epoch_results_path, '{}_metrics.json'.format(dataset.split))
-        with open(metrics_path, 'w') as results_file:
-            json.dump(metrics, results_file)
-        # save the cfg used
-        with open(os.path.join(epoch_results_path, 'config.yaml'), 'w') as cfg_file:
-            cfg_file.write(str(self.cfg))
-
-        return metrics
+        if checkpoint is None:
+            results['test_loss'] = results['eval_loss']
+            results['test_rmse'] = results['eval_rmse']
+            del results['eval_loss']
+            del results['eval_rmse']
+        self.logger.info('Results:\n %s', str(results))
+        # Save results
+        with open(self.results_path, 'a+') as results_file:
+            json.dump(results, results_file)
+            results_file.write('\n')
+        # Log tensorboard metrics
+        for key in results:
+            self.tensorboard_writer.add_scalar('{}_metrics/{}'.format(dataset.split, key), results[key], epoch_evaluated)
         
