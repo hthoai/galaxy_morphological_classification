@@ -23,8 +23,6 @@ def parse_args():
         raise Exception("args.resume is set on `test` mode: can't resume testing")
     if args.epoch is not None and args.mode == 'train':
         raise Exception("The `epoch` parameter should not be set when training")
-    if args.view is not None and args.mode != "test":
-        raise Exception('Visualization is only available during evaluation')
     if args.cpu:
         raise Exception("CPU training/testing is not supported: the NMS procedure is only implemented for CUDA")
 
@@ -47,7 +45,7 @@ def main():
             runner.train()
         except KeyboardInterrupt:
             logging.info('Training interrupted.')
-    runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch(), save_predictions=args.save_predictions)
+    runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch())
 
 
 if __name__ == '__main__':
