@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 
+
 class SimpleModel(Module):
     def __init__(self):
         self.conv1 = Conv2d(in_channels=3, out_channels=32, kernel_size=3)
@@ -15,6 +16,3 @@ class SimpleModel(Module):
         input = self.maxpool1(input)
         input = self.dense1(input)
         input = self.ReLu(input)
-    
-    
-        

@@ -7,15 +7,25 @@ import subprocess
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+
 class Experiment:
-    def __init__(self, exp_name, args=None, mode='train', exps_basedir='experiments', tensorboard_dir='tensorboard'):
+    def __init__(
+        self,
+        exp_name,
+        args=None,
+        mode="train",
+        exps_basedir="experiments",
+        tensorboard_dir="tensorboard",
+    ):
         self.name = exp_name
         self.exp_dirpath = os.path.join(exps_basedir, exp_name)
-        self.models_dirpath = os.path.join(self.exp_dirpath, 'models')
-        self.cfg_path = os.path.join(self.exp_dirpath, 'config.yaml')
-        self.code_state_path = os.path.join(self.exp_dirpath, 'code_state.txt')
-        self.log_path = os.path.join(self.exp_dirpath, 'log_{}.txt'.format(mode))
-        self.results_path = os.path.join(self.exp_dirpath, 'results_{}.txt'.format(mode))
+        self.models_dirpath = os.path.join(self.exp_dirpath, "models")
+        self.cfg_path = os.path.join(self.exp_dirpath, "config.yaml")
+        self.code_state_path = os.path.join(self.exp_dirpath, "code_state.txt")
+        self.log_path = os.path.join(self.exp_dirpath, "log_{}.txt".format(mode))
+        self.results_path = os.path.join(
+            self.exp_dirpath, "results_{}.txt".format(mode)
+        )
         self.tensorboard_writer = SummaryWriter(os.path.join(tensorboard_dir, exp_name))
         self.cfg = None
         self.setup_exp_dir()
@@ -32,35 +42,44 @@ class Experiment:
 
     def save_code_state(self):
         state = "Git hash: {}".format(
-            subprocess.run(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE, check=False).stdout.decode('utf-8'))
-        state += '\n*************\nGit diff:\n*************\n'
-        state += subprocess.run(['git', 'diff'], stdout=subprocess.PIPE, check=False).stdout.decode('utf-8')
-        with open(self.code_state_path, 'w') as code_state_file:
+            subprocess.run(
+                ["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE, check=False
+            ).stdout.decode("utf-8")
+        )
+        state += "\n*************\nGit diff:\n*************\n"
+        state += subprocess.run(
+            ["git", "diff"], stdout=subprocess.PIPE, check=False
+        ).stdout.decode("utf-8")
+        with open(self.code_state_path, "w") as code_state_file:
             code_state_file.write(state)
 
     def setup_logging(self):
-        formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s")
+        formatter = logging.Formatter(
+            "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"
+        )
         file_handler = logging.FileHandler(self.log_path)
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.INFO)
         stream_handler.setFormatter(formatter)
-        logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, stream_handler])
+        logging.basicConfig(
+            level=logging.DEBUG, handlers=[file_handler, stream_handler]
+        )
         self.logger = logging.getLogger(__name__)
 
     def log_args(self, args):
-        self.logger.debug('CLI Args:\n %s', str(args))
+        self.logger.debug("CLI Args:\n %s", str(args))
 
     def set_cfg(self, cfg, override=False):
-        assert 'model_checkpoint_interval' in cfg
+        assert "model_checkpoint_interval" in cfg
         self.cfg = cfg
         if not os.path.exists(self.cfg_path) or override:
-            with open(self.cfg_path, 'w') as cfg_file:
+            with open(self.cfg_path, "w") as cfg_file:
                 cfg_file.write(str(cfg))
 
     def get_last_checkpoint_epoch(self):
-        pattern = re.compile('model_(\\d+).pt')
+        pattern = re.compile("model_(\\d+).pt")
         last_epoch = -1
         for ckpt_file in os.listdir(self.models_dirpath):
             result = pattern.match(ckpt_file)
@@ -72,18 +91,18 @@ class Experiment:
         return last_epoch
 
     def get_checkpoint_path(self, epoch):
-        return os.path.join(self.models_dirpath, 'model_{:04d}.pt'.format(epoch))
+        return os.path.join(self.models_dirpath, "model_{:04d}.pt".format(epoch))
 
     def get_epoch_model(self, epoch):
-        return torch.load(self.get_checkpoint_path(epoch))['model']
+        return torch.load(self.get_checkpoint_path(epoch))["model"]
 
     def load_last_train_state(self, model, optimizer, scheduler):
         epoch = self.get_last_checkpoint_epoch()
         train_state_path = self.get_checkpoint_path(epoch)
         train_state = torch.load(train_state_path)
-        model.load_state_dict(train_state['model'])
-        optimizer.load_state_dict(train_state['optimizer'])
-        scheduler.load_state_dict(train_state['scheduler'])
+        model.load_state_dict(train_state["model"])
+        optimizer.load_state_dict(train_state["optimizer"])
+        scheduler.load_state_dict(train_state["scheduler"])
 
         return epoch, model, optimizer, scheduler
 
@@ -91,52 +110,69 @@ class Experiment:
         train_state_path = self.get_checkpoint_path(epoch)
         torch.save(
             {
-                'epoch': epoch,
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'scheduler': scheduler.state_dict()
-            }, train_state_path)
+                "epoch": epoch,
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
+            },
+            train_state_path,
+        )
 
-    def iter_end_callback(self, epoch, max_epochs, iter_nb, max_iter, loss, loss_components):
-        line = 'Epoch [{}/{}] - Iter [{}/{}] - Loss: {:.5f} - '.format(epoch, max_epochs, iter_nb, max_iter, loss)
-        line += ' - '.join(
-            ['{}: {:.5f}'.format(component, loss_components[component]) for component in loss_components])
+    def iter_end_callback(
+        self, epoch, max_epochs, iter_nb, max_iter, loss, loss_components
+    ):
+        line = "Epoch [{}/{}] - Iter [{}/{}] - Loss: {:.5f} - ".format(
+            epoch, max_epochs, iter_nb, max_iter, loss
+        )
+        line += " - ".join(
+            [
+                "{}: {:.5f}".format(component, loss_components[component])
+                for component in loss_components
+            ]
+        )
         self.logger.debug(line)
         overall_iter = (epoch * max_iter) + iter_nb
-        self.tensorboard_writer.add_scalar('loss/total_loss', loss, overall_iter)
+        self.tensorboard_writer.add_scalar("loss/total_loss", loss, overall_iter)
         for key in loss_components:
-            self.tensorboard_writer.add_scalar('loss/{}'.format(key), loss_components[key], overall_iter)
+            self.tensorboard_writer.add_scalar(
+                "loss/{}".format(key), loss_components[key], overall_iter
+            )
 
     def epoch_start_callback(self, epoch, max_epochs):
-        self.logger.debug(f'Epoch [{epoch}/{max_epochs}] starting.')
+        self.logger.debug(f"Epoch [{epoch}/{max_epochs}] starting.")
 
     def epoch_end_callback(self, epoch, max_epochs, model, optimizer, scheduler):
-        self.logger.debug(f'Epoch [{epoch}/{max_epochs}] finished.')
-        if epoch % self.cfg['model_checkpoint_interval'] == 0:
+        self.logger.debug(f"Epoch [{epoch}/{max_epochs}] finished.")
+        if epoch % self.cfg["model_checkpoint_interval"] == 0:
             self.save_train_state(epoch, model, optimizer, scheduler)
 
     def train_start_callback(self, cfg):
-        self.logger.debug('Beginning training session. CFG used:\n%s', str(cfg))
+        self.logger.debug("Beginning training session. CFG used:\n%s", str(cfg))
 
     def train_end_callback(self):
-        self.logger.debug('Training session finished.')
+        self.logger.debug("Training session finished.")
 
     def eval_start_callback(self, cfg):
-        self.logger.debug('Beginning testing session. CFG used:\n%s', str(cfg))
+        self.logger.debug("Beginning testing session. CFG used:\n%s", str(cfg))
 
     def eval_end_callback(self, dataset, epoch_evaluated, results, checkpoint):
-        self.logger.debug('Testing session finished on model after epoch %d.', epoch_evaluated)
+        self.logger.debug(
+            "Testing session finished on model after epoch %d.", epoch_evaluated
+        )
         if checkpoint is None:
-            results['test_loss'] = results['eval_loss']
-            results['test_rmse'] = results['eval_rmse']
-            del results['eval_loss']
-            del results['eval_rmse']
-        self.logger.info('Results:\n %s', str(results))
+            results["test_loss"] = results["eval_loss"]
+            results["test_rmse"] = results["eval_rmse"]
+            del results["eval_loss"]
+            del results["eval_rmse"]
+        self.logger.info("Results:\n %s", str(results))
         # Save results
-        with open(self.results_path, 'a+') as results_file:
+        with open(self.results_path, "a+") as results_file:
             json.dump(results, results_file)
-            results_file.write('\n')
+            results_file.write("\n")
         # Log tensorboard metrics
         for key in results:
-            self.tensorboard_writer.add_scalar('{}_metrics/{}'.format(dataset.split, key), results[key], epoch_evaluated)
-        
+            self.tensorboard_writer.add_scalar(
+                "{}_metrics/{}".format(dataset.split, key),
+                results[key],
+                epoch_evaluated,
+            )

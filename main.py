@@ -15,16 +15,22 @@ def parse_args():
     parser.add_argument("--cfg", help="Config file")
     parser.add_argument("--resume", action="store_true", help="Resume training")
     parser.add_argument("--epoch", type=int, help="Epoch to test the model on")
-    parser.add_argument("--cpu", action="store_true", help="(Unsupported) Use CPU instead of GPU")
+    parser.add_argument(
+        "--cpu", action="store_true", help="(Unsupported) Use CPU instead of GPU"
+    )
     args = parser.parse_args()
     if args.cfg is None and args.mode == "train":
-        raise Exception("If you are training, you have to set a config file using --cfg /path/to/your/config.yaml")
+        raise Exception(
+            "If you are training, you have to set a config file using --cfg /path/to/your/config.yaml"
+        )
     if args.resume and args.mode == "test":
         raise Exception("args.resume is set on `test` mode: can't resume testing")
-    if args.epoch is not None and args.mode == 'train':
+    if args.epoch is not None and args.mode == "train":
         raise Exception("The `epoch` parameter should not be set when training")
     if args.cpu:
-        raise Exception("CPU training/testing is not supported: the NMS procedure is only implemented for CUDA")
+        raise Exception(
+            "CPU training/testing is not supported: the NMS procedure is only implemented for CUDA"
+        )
 
     return args
 
@@ -38,15 +44,19 @@ def main():
         cfg_path = args.cfg
     cfg = Config(cfg_path)
     exp.set_cfg(cfg, override=False)
-    device = torch.device('cpu') if not torch.cuda.is_available() or args.cpu else torch.device('cuda')
+    device = (
+        torch.device("cpu")
+        if not torch.cuda.is_available() or args.cpu
+        else torch.device("cuda")
+    )
     runner = Runner(cfg, exp, device, resume=args.resume)
-    if args.mode == 'train':
+    if args.mode == "train":
         try:
             runner.train()
         except KeyboardInterrupt:
-            logging.info('Training interrupted.')
+            logging.info("Training interrupted.")
     runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
