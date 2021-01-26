@@ -1,7 +1,5 @@
 from graphviz import Digraph 
 
-# Decision tree of 11 main galaxy classes (super classes)
-
 # initialize graph project
 galaxy_classes_tree = Digraph(comment='Galaxy Classification Decision Tree')
 
@@ -14,7 +12,7 @@ galaxy_classes_tree.node('Class_5', label='Class 5')
 galaxy_classes_tree.node('Class_6', label='Class 6')
 galaxy_classes_tree.node('Class_7', label='Class 7')
 
-# connect nodes (direct graph with no weights)
+# connect nodes with labels
 galaxy_classes_tree.edge('Class_1', 'Class_7', label='1.1')
 galaxy_classes_tree.edge('Class_1', 'Class_2', label='1.2')
 
