@@ -50,3 +50,13 @@ datasets:
       aug_chance: 0
       augmentations:
       root: "datasets"
+
+  pred:
+    type: GalaxyPredictDataset
+    parameters:
+      split: pred
+      img_size: [*img_h, *img_w]
+      normalize: false
+      aug_chance: 0
+      augmentations:
+      root: "datasets"
