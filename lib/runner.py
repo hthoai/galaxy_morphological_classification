@@ -165,9 +165,14 @@ class Runner:
             for idx, (img_ids, images) in enumerate(tqdm(dataloader)):
                 images = images.to(self.device)
                 predictions = model(images)
-                for preddiction in predictions:
+                for img_id, preddiction in zip(img_ids, predictions):
                     df = df.append(
-                        dict(zip(df.columns, torch.flatten(preddiction).tolist())),
+                        dict(
+                            zip(
+                                df.columns,
+                                [img_id] + torch.flatten(preddiction).tolist(),
+                            )
+                        ),
                         ignore_index=True,
                     )
             self.logger.info(f"Writing result to {self.exp.results_path}")
