@@ -10,9 +10,12 @@ from lib.experiment import Experiment
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Galaxy Morphological Classification")
-    parser.add_argument("mode", choices=["train", "test"], help="Train or test?")
+    parser.add_argument(
+        "mode", choices=["train", "test", "pred"], help="Train, eval or predict?"
+    )
     parser.add_argument("--exp_name", help="Experiment name", required=True)
     parser.add_argument("--cfg", help="Config file")
+    parser.add_argument("--model_name", help="Model name")
     parser.add_argument("--resume", action="store_true", help="Resume training")
     parser.add_argument("--epoch", type=int, help="Epoch to test the model on")
     parser.add_argument(
@@ -55,7 +58,10 @@ def main():
             runner.train()
         except KeyboardInterrupt:
             logging.info("Training interrupted.")
-    runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch())
+    elif args.mode == "test":
+        runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch())
+    else:
+        runner.predict(args.model_name)
 
 
 if __name__ == "__main__":
