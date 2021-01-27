@@ -7,7 +7,6 @@ from PIL import Image
 import imgaug.augmenters as iaa
 
 import torch
-from torch._C import dtype
 from torch.utils.data.dataset import Dataset
 from torchvision.transforms import ToTensor
 
