@@ -1,3 +1,4 @@
+import os
 import pickle
 import random
 import logging
@@ -5,6 +6,7 @@ from tqdm import tqdm, trange
 
 import cv2
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn.functional as F
@@ -81,9 +83,11 @@ class Runner:
             self.logger.info("Loading model %s", model_path)
             model.load_state_dict(self.exp.get_epoch_model(epoch))
             dataloader = self.get_test_dataloader()
+            on_val = False
         else:
             model = checkpoint
             dataloader = self.get_val_dataloader()
+            on_val = True
         model = model.to(self.device)
         model.eval()
         self.exp.eval_start_callback(self.cfg)
@@ -94,15 +98,81 @@ class Runner:
             for idx, (images, targets) in enumerate(tqdm(dataloader)):
                 images = images.to(self.device)
                 targets = targets.to(self.device)
-                outputs = model(images)
-                batch_eval_loss = F.binary_cross_entropy(outputs, targets)
+                prediction = model(images)
+                batch_eval_loss = F.binary_cross_entropy(prediction, targets)
                 eval_loss += batch_eval_loss.mean().item()
-                batch_rmse = torch.sqrt(F.mse_loss(outputs, targets))
+                batch_rmse = torch.sqrt(F.mse_loss(prediction, targets))
                 eval_rmse += batch_rmse.mean().item()
             eval_loss = eval_loss / nb_eval_steps
             eval_rmse = eval_rmse / nb_eval_steps
             results = {"eval_loss": eval_loss, "eval_rmse": eval_rmse}
-        self.exp.eval_end_callback(dataloader.dataset, epoch + 1, results, checkpoint)
+        self.exp.eval_end_callback(dataloader.dataset, epoch + 1, results, on_val)
+
+    def predict(self, model_name):
+        model = self.cfg.get_model()
+        self.logger.info("Loading model %s", model_name)
+        model.load_state_dict(
+            torch.load(os.path.join(self.exp.models_dirpath, model_name))["model"]
+        )
+        model = model.to(self.device)
+        model.eval()
+        dataloader = self.get_pred_dataloader()
+        self.exp.pred_start_callback(self.cfg)
+        df = pd.DataFrame(
+            columns=[
+                "GalaxyID",
+                "Class1.1",
+                "Class1.2",
+                "Class1.3",
+                "Class2.1",
+                "Class2.2",
+                "Class3.1",
+                "Class3.2",
+                "Class4.1",
+                "Class4.2",
+                "Class5.1",
+                "Class5.2",
+                "Class5.3",
+                "Class5.4",
+                "Class6.1",
+                "Class6.2",
+                "Class7.1",
+                "Class7.2",
+                "Class7.3",
+                "Class8.1",
+                "Class8.2",
+                "Class8.3",
+                "Class8.4",
+                "Class8.5",
+                "Class8.6",
+                "Class8.7",
+                "Class9.1",
+                "Class9.2",
+                "Class9.3",
+                "Class10.1",
+                "Class10.2",
+                "Class10.3",
+                "Class11.1",
+                "Class11.2",
+                "Class11.3",
+                "Class11.4",
+                "Class11.5",
+                "Class11.6",
+            ]
+        )
+        # Predict and write to csv file
+        with torch.no_grad():
+            for idx, (img_ids, images) in enumerate(tqdm(dataloader)):
+                images = images.to(self.device)
+                predictions = model(images)
+                for preddiction in predictions:
+                    df = df.append(
+                        dict(zip(df.columns, torch.flatten(preddiction).tolist())),
+                        ignore_index=True,
+                    )
+            self.logger.info(f"Writing result to {self.exp.results_path}")
+            df.to_csv(self.exp.results_path, index=False)
+        self.exp.pred_end_callback()
 
     def get_train_dataloader(self):
         train_dataset = self.cfg.get_dataset("train")
@@ -136,6 +206,17 @@ class Runner:
             worker_init_fn=self._worker_init_fn_,
         )
         return val_loader
+
+    def get_pred_dataloader(self):
+        pred_dataset = self.cfg.get_dataset("pred")
+        pred_loader = torch.utils.data.DataLoader(
+            dataset=pred_dataset,
+            batch_size=self.cfg["batch_size"],
+            shuffle=False,
+            num_workers=1,
+            worker_init_fn=self._worker_init_fn_,
+        )
+        return pred_loader
 
     @staticmethod
     def _worker_init_fn_(_):
