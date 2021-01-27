@@ -158,7 +158,7 @@ class Experiment:
     def eval_start_callback(self, cfg):
         self.logger.debug("Beginning testing session. CFG used:\n%s", str(cfg))
 
-    def eval_end_callback(self, dataset, epoch_evaluated, results, predictions, on_val):
+    def eval_end_callback(self, dataset, epoch_evaluated, results, on_val):
         self.logger.debug(
             "Testing session finished on model after epoch %d.", epoch_evaluated
         )
