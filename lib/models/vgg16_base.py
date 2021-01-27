@@ -22,8 +22,4 @@ class SimpleModel(Module):
         input = self.vgg16(input)
         input = self.dense1(input)
         input = self.Sigmoid(input)
-
-x = torch.rand(2,3,424,424)
-model = models.vgg16(pretrained=True)
-y = model(x)
-print(y.shape)
+        return input
