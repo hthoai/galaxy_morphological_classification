@@ -4,6 +4,9 @@ import json
 import logging
 import subprocess
 
+import pandas as pd
+from tqdm import tqdm
+
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -24,7 +27,7 @@ class Experiment:
         self.code_state_path = os.path.join(self.exp_dirpath, "code_state.txt")
         self.log_path = os.path.join(self.exp_dirpath, "log_{}.txt".format(mode))
         self.results_path = os.path.join(
-            self.exp_dirpath, "results_{}.txt".format(mode)
+            self.exp_dirpath, "results_{}.csv".format(exp_name)
         )
         self.tensorboard_writer = SummaryWriter(os.path.join(tensorboard_dir, exp_name))
         self.cfg = None
@@ -132,7 +135,7 @@ class Experiment:
         )
         self.logger.debug(line)
         overall_iter = (epoch * max_iter) + iter_nb
-        self.tensorboard_writer.add_scalar("loss/total_loss", loss, overall_iter)
+        self.tensorboard_writer.add_scalar("loss/loss", loss, overall_iter)
         for key in loss_components:
             self.tensorboard_writer.add_scalar(
                 "loss/{}".format(key), loss_components[key], overall_iter
@@ -155,20 +158,16 @@ class Experiment:
     def eval_start_callback(self, cfg):
         self.logger.debug("Beginning testing session. CFG used:\n%s", str(cfg))
 
-    def eval_end_callback(self, dataset, epoch_evaluated, results, checkpoint):
+    def eval_end_callback(self, dataset, epoch_evaluated, results, predictions, on_val):
         self.logger.debug(
             "Testing session finished on model after epoch %d.", epoch_evaluated
         )
-        if checkpoint is None:
+        if on_val == False:
             results["test_loss"] = results["eval_loss"]
             results["test_rmse"] = results["eval_rmse"]
             del results["eval_loss"]
             del results["eval_rmse"]
         self.logger.info("Results:\n %s", str(results))
-        # Save results
-        with open(self.results_path, "a+") as results_file:
-            json.dump(results, results_file)
-            results_file.write("\n")
         # Log tensorboard metrics
         for key in results:
             self.tensorboard_writer.add_scalar(
@@ -176,3 +175,9 @@ class Experiment:
                 results[key],
                 epoch_evaluated,
             )
+
+    def pred_start_callback(self, cfg):
+        self.logger.debug("Beginning predicting session. CFG used:\n%s", str(cfg))
+
+    def pred_end_callback(self):
+        self.logger.debug("Prediction session finished.")
