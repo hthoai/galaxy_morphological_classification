@@ -5,7 +5,6 @@ import random
 # load csv
 df_path = os.path.join("training_solutions_rev1.csv")
 df = pd.read_csv(df_path)
-data_id = list(df['GalaxyID'])
 
-# choose k data randomly 
-data_reduce = random.sample(data_id, k=3000)
+df_reduce = df.sample(n=3000, axis='rows')
+
