@@ -37,7 +37,7 @@ class Runner:
             starting_epoch = last_epoch + 1
         max_epochs = self.cfg["epochs"]
         train_loader = self.get_train_dataloader()
-        loss_parameters = self.cfg.get_loss_parameters()
+        # loss_parameters = self.cfg.get_loss_parameters()
 
         for epoch in trange(
             starting_epoch, max_epochs + 1, initial=starting_epoch - 1, total=max_epochs
@@ -51,7 +51,8 @@ class Runner:
 
                 # Forward pass
                 outputs = model(images)
-                loss = F.binary_cross_entropy(outputs, targets)
+                loss = F.mse_loss(outputs, targets)
+                # loss = F.binary_cross_entropy(outputs, targets)
                 # Backward and optimize
                 optimizer.zero_grad()
                 loss.backward()
@@ -66,15 +67,13 @@ class Runner:
                 self.exp.iter_end_callback(
                     epoch, max_epochs, idx, len(train_loader), loss.item(), postfix_dict
                 )
-                postfix_dict["loss"] = loss.item()
+                postfix_dict["rmse"] = loss.item()
                 pbar.set_postfix(ordered_dict=postfix_dict)
-            self.exp.epoch_end_callback(
-                epoch + 1, max_epochs, model, optimizer, scheduler
-            )
+            self.exp.epoch_end_callback(epoch, max_epochs, model, optimizer, scheduler)
 
             # Validate
-            if (epoch + 1) % self.cfg["val_every"] == 0:
-                self.eval(epoch + 1, checkpoint=model)
+            if (epoch) % self.cfg["val_every"] == 0:
+                self.eval(epoch, checkpoint=model)
 
     def eval(self, epoch, checkpoint=None):
         if checkpoint is None:
@@ -92,25 +91,26 @@ class Runner:
         model.eval()
         self.exp.eval_start_callback(self.cfg)
         with torch.no_grad():
-            eval_loss = 0
             eval_rmse = 0
             nb_eval_steps = len(dataloader.dataset) // self.cfg["batch_size"]
             for idx, (images, targets) in enumerate(tqdm(dataloader)):
                 images = images.to(self.device)
                 targets = targets.to(self.device)
                 prediction = model(images)
-                batch_eval_loss = F.binary_cross_entropy(prediction, targets)
-                eval_loss += batch_eval_loss.mean().item()
-                batch_rmse = torch.sqrt(F.mse_loss(prediction, targets))
-                eval_rmse += batch_rmse.mean().item()
-            eval_loss = eval_loss / nb_eval_steps
-            eval_rmse = eval_rmse / nb_eval_steps
-            results = {"eval_loss": eval_loss, "eval_rmse": eval_rmse}
-        self.exp.eval_end_callback(dataloader.dataset, epoch + 1, results, on_val)
+                batch_eval_loss = torch.sqrt(F.mse_loss(prediction, targets))
+                eval_rmse += batch_eval_loss.mean().item()
+                # batch_rmse = torch.sqrt(F.mse_loss(prediction, targets))
+                # eval_rmse += batch_rmse.mean().item()
+            eval_loss = eval_rmse / nb_eval_steps
+            results = {"eval_rmse": eval_rmse}
+        self.exp.eval_end_callback(dataloader.dataset, epoch, results, on_val)
 
-    def predict(self, model_name):
+    def predict(self, model_nb):
         model = self.cfg.get_model()
-        self.logger.info("Loading model %s", model_name)
+        model_name = "model_" + model_nb.zfill(4) + ".pt"
+        self.logger.info(
+            "Loading model %s", os.path.join(self.exp.models_dirpath, model_name)
+        )
         model.load_state_dict(
             torch.load(os.path.join(self.exp.models_dirpath, model_name))["model"]
         )
