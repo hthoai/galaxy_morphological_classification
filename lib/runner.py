@@ -101,7 +101,7 @@ class Runner:
                 eval_rmse += batch_eval_loss.mean().item()
                 # batch_rmse = torch.sqrt(F.mse_loss(prediction, targets))
                 # eval_rmse += batch_rmse.mean().item()
-            eval_loss = eval_rmse / nb_eval_steps
+            eval_rmse = eval_rmse / nb_eval_steps
             results = {"eval_rmse": eval_rmse}
         self.exp.eval_end_callback(dataloader.dataset, epoch, results, on_val)
 
