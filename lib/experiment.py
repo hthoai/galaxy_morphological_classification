@@ -135,7 +135,7 @@ class Experiment:
         )
         self.logger.debug(line)
         overall_iter = (epoch * max_iter) + iter_nb
-        self.tensorboard_writer.add_scalar("loss/loss", loss, overall_iter)
+        self.tensorboard_writer.add_scalar("loss/rmse", loss, overall_iter)
         for key in loss_components:
             self.tensorboard_writer.add_scalar(
                 "loss/{}".format(key), loss_components[key], overall_iter
@@ -163,9 +163,7 @@ class Experiment:
             "Testing session finished on model after epoch %d.", epoch_evaluated
         )
         if on_val == False:
-            results["test_loss"] = results["eval_loss"]
             results["test_rmse"] = results["eval_rmse"]
-            del results["eval_loss"]
             del results["eval_rmse"]
         self.logger.info("Results:\n %s", str(results))
         # Log tensorboard metrics
