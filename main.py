@@ -15,7 +15,7 @@ def parse_args():
     )
     parser.add_argument("--exp_name", help="Experiment name", required=True)
     parser.add_argument("--cfg", help="Config file")
-    parser.add_argument("--model_name", help="Model name")
+    parser.add_argument("--model_nb", help="Model number (epoch number)")
     parser.add_argument("--resume", action="store_true", help="Resume training")
     parser.add_argument("--epoch", type=int, help="Epoch to test the model on")
     parser.add_argument(
@@ -61,7 +61,7 @@ def main():
     elif args.mode == "test":
         runner.eval(epoch=args.epoch or exp.get_last_checkpoint_epoch())
     else:
-        runner.predict(args.model_name)
+        runner.predict(args.model_nb)
 
 
 if __name__ == "__main__":
