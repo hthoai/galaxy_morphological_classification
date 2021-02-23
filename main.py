@@ -5,7 +5,7 @@
 # import numpy as np
 # from lib.models.galaxy_model import GalaxyModel
 
-# lr = 0.5
+# lr = 0.01
 # epochs = 20
 # bs = 64
 

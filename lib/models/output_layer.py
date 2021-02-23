@@ -25,7 +25,7 @@ class OutputLayer(nn.Module):
         return probabilities
 
     @staticmethod
-    def weighted_output_layer(questions: list):
+    def weighted_output_layer(questions: list) -> torch.Tensor:
         w1 = 1
         w2 = questions[0][:, 1] # question 1 answer 2
         w3 = questions[1][:, 1] * w2 # question 2 answer 2 * w2
