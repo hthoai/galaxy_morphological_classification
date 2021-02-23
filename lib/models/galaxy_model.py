@@ -1,6 +1,8 @@
-from torch.nn import Linear, Conv2d, MaxPool2d, Module
+from torch.nn import Linear, Conv2d, MaxPool2d, Flatten, Module
 from torch.nn import Sigmoid, ReLU
 from lib.models.output_layer import OutputLayer
+
+OUT_DENSE_SHAPE = 512
 
 class GalaxyModel(Module):
     def __init__(self):
@@ -15,15 +17,18 @@ class GalaxyModel(Module):
         self.maxpool = MaxPool2d(kernel_size=2)
 
         # MLP layer
-        self.dense1 = Linear(in_features=512, out_features=2048)
+        self.dense1 = Linear(in_features=OUT_DENSE_SHAPE, out_features=2048)
         self.dense2 = Linear(in_features=2048, out_features=2048)
         self.dense3 = Linear(in_features=2048, out_features=37)
+        
+        # Flatten layer
+        self.flatten = Flatten()
 
         # Activation function
         self.ReLU = ReLU()
         self.Sigmoid = Sigmoid()
 
-        # Output Layer (TODO rename)
+        # Output Layer
         self.output = OutputLayer(in_features=37, out_features=37)
 
     def forward(self, x):
@@ -41,8 +46,8 @@ class GalaxyModel(Module):
         x = self.conv4(x)
         x = self.maxpool(x)
         x = self.ReLU(x)
-
-        x = x.view(-1, 512)
+        
+        x = self.flatten(x)
         x = self.dense1(x)
         x = self.ReLU(x)
         x = self.dense2(x)
