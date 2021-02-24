@@ -37,19 +37,18 @@ class OutputLayer(nn.Module):
         w5 = w4
         w6 = 1
         w8 = questions[5][:, 0] * w6
-
+        
         # weighted answers
         #TODO: Refactor Dump Code
         questions[1] = questions[1] * torch.transpose(w2.repeat(2, 1), 0, 1)
         questions[2] = questions[2] * torch.transpose(w3.repeat(2, 1), 0, 1)
-        questions[3] = questions[3] * torch.transpose(w3.repeat(2, 1), 0, 1)
-        questions[4] = questions[4] * torch.transpose(w3.repeat(4, 1), 0, 1)
-        questions[5] = questions[5] * torch.transpose(w3.repeat(2, 1), 0, 1)
-        questions[6] = questions[6] * torch.transpose(w3.repeat(3, 1), 0, 1)
-        questions[7] = questions[7] * torch.transpose(w3.repeat(7, 1), 0, 1)
-        questions[8] = questions[8] * torch.transpose(w3.repeat(3, 1), 0, 1)
-        questions[9] = questions[9] * torch.transpose(w3.repeat(3, 1), 0, 1)
-        questions[10] = questions[10] * torch.transpose(w3.repeat(6, 1), 0, 1)
+        questions[3] = questions[3] * torch.transpose(w4.repeat(2, 1), 0, 1)
+        questions[4] = questions[4] * torch.transpose(w5.repeat(4, 1), 0, 1)
+        questions[6] = questions[6] * torch.transpose(w7.repeat(3, 1), 0, 1)
+        questions[7] = questions[7] * torch.transpose(w8.repeat(7, 1), 0, 1)
+        questions[8] = questions[8] * torch.transpose(w9.repeat(3, 1), 0, 1)
+        questions[9] = questions[9] * torch.transpose(w10.repeat(3, 1), 0, 1)
+        questions[10] = questions[10] * torch.transpose(w11.repeat(6, 1), 0, 1)
 
         return torch.cat(questions, dim=1)
 

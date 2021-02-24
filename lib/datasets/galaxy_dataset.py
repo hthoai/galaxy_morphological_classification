@@ -62,6 +62,7 @@ class GalaxyDataset(Dataset):
         img_path = self.img_paths[idx]
         img = cv2.imread(img_path + IMAGE_EXT)
         # img = Image.open(img_path + IMAGE_EXT).convert('RGB')
+        img = img / 255.
         if self.normalize:
             img = (img - IMAGENET_MEAN) / IMAGENET_STD
         img = self.transform(image=img.copy())
