@@ -2,10 +2,10 @@ from torch.nn import Linear, Conv2d, MaxPool2d, Flatten, Module
 from torch.nn import Sigmoid, ReLU
 from lib.models.output_layer import OutputLayer
 
-OUT_DENSE_SHAPE = 512
+# OUT_DENSE_SHAPE = 512
 
 class GalaxyModel(Module):
-    def __init__(self):
+    def __init__(self, out_dense_shape):
         super().__init__()
         # Conv layer
         self.conv1 = Conv2d(in_channels=3, kernel_size=6, out_channels=32)
@@ -17,7 +17,7 @@ class GalaxyModel(Module):
         self.maxpool = MaxPool2d(kernel_size=2)
 
         # MLP layer
-        self.dense1 = Linear(in_features=OUT_DENSE_SHAPE, out_features=2048)
+        self.dense1 = Linear(in_features=out_dense_shape, out_features=2048)
         self.dense2 = Linear(in_features=2048, out_features=2048)
         self.dense3 = Linear(in_features=2048, out_features=37)
         
