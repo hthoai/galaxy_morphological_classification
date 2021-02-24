@@ -66,7 +66,7 @@ class GalaxyDataset(Dataset):
         if self.normalize:
             img = (img - IMAGENET_MEAN) / IMAGENET_STD
         img = self.transform(image=img.copy())
-        img = self.to_tensor(img)
+        img = self.to_tensor(img.astype(np.float32))
         target = torch.tensor(self.targets[idx], dtype=torch.float)
         return img, target
     
