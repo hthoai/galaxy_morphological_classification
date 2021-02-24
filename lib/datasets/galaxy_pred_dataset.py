@@ -24,7 +24,7 @@ class GalaxyPredictDataset(Dataset):
                  split='pred',
                  root=None,
                  normalize=False,
-                 img_size=(424, 424)):
+                 img_size=(69, 69)):
         super(GalaxyPredictDataset, self).__init__()
         self.normalize = normalize
         self.split = split
