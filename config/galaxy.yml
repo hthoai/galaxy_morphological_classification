@@ -1,0 +1,55 @@
+# Model settings
+val_every: 5
+model_checkpoint_interval: 5
+seed: 1412
+model:
+  name: GalaxyModel
+  parameters:
+    out_dense_shape: 3200
+batch_size: 8
+epochs: 100
+loss_parameters: {}
+optimizer:
+  name: Adam
+  parameters:
+    lr: 0.0003
+lr_scheduler:
+  name: CosineAnnealingLR
+  parameters:
+    T_max: 492700 # 100 * 4927 iterations
+
+# Dataset settings
+datasets:
+  train:
+    type: GalaxyDataset
+    parameters:
+      split: train
+      normalize: true
+      aug_chance: 0
+      augmentations:
+      root: "datasets"
+
+  test:
+    type: GalaxyDataset
+    parameters:
+      split: test
+      normalize: true
+      aug_chance: 0
+      augmentations:
+      root: "datasets"
+
+  val:
+    type: GalaxyDataset
+    parameters:
+      split: val
+      normalize: true
+      aug_chance: 0
+      augmentations:
+      root: "datasets"
+
+  pred:
+    type: GalaxyPredictDataset
+    parameters:
+      split: pred
+      normalize: true
+      root: "datasets"
